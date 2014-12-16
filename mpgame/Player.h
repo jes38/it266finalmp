@@ -5,7 +5,6 @@
 
 #ifndef __GAME_PLAYER_H__
 #define __GAME_PLAYER_H__
-
 /*
 ===============================================================================
 
@@ -269,7 +268,6 @@ public:
 
 class idPlayer : public idActor {
 public:
-
  	enum {
  		EVENT_IMPULSE = idEntity::EVENT_MAXEVENTS,
  		EVENT_EXIT_TELEPORTER,
@@ -528,6 +526,9 @@ public:
 	void					DiscoverSecretArea			( const char *description);
 	
 	void					StartBossBattle				( idEntity* ent );
+
+	//variable used in the .cpp
+	int powerLevels;
 
 	// Powerups
 	bool					GivePowerUp					( int powerup, int time, bool team = false );

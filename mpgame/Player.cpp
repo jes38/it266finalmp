@@ -45,6 +45,12 @@ idCVar net_showPredictionError( "net_showPredictionError", "-1", CVAR_INTEGER | 
 bool g_ObjectiveSystemOpen = false;
 #endif
 
+//used for shield regen
+boolean amPulseSet = false;
+
+//used for sheild recharge modification
+int powerLevels = 500;
+
 // distance between ladder rungs (actually is half that distance, but this sounds better)
 const int LADDER_RUNG_DISTANCE = 32;
 
@@ -63,7 +69,7 @@ const float	PLAYER_ITEM_DROP_SPEED	= 100.0f;
 const int SPECTATE_RAISE = 25;
 
 const int	HEALTH_PULSE		= 1000;			// Regen rate and heal leak rate (for health > 100)
-const int	ARMOR_PULSE			= 1000;			// armor ticking down due to being higher than maxarmor
+const int	ARMOR_PULSE			= 500;			// armor ticking down due to being higher than maxarmor
 const int	AMMO_REGEN_PULSE	= 1000;			// ammo regen in Arena CTF
 const int	POWERUP_BLINKS		= 5;			// Number of times the powerup wear off sound plays
 const int	POWERUP_BLINK_TIME	= 1000;			// Time between powerup wear off sounds
@@ -1966,7 +1972,12 @@ void idPlayer::Spawn( void ) {
 			physicsObj.SetContents( 0 );
 			physicsObj.SetMovementType( PM_SPECTATOR );
 			physicsObj.SetClipMask( MASK_DEADSOLID );
+		} else { 
+			physicsObj.SetContents( 0 );
+			physicsObj.SetMovementType( PM_SPECTATOR );
+			physicsObj.SetClipMask( MASK_DEADSOLID );
 		}
+		//added else statement so when player isn't in spectator, still can fly
 
 		if ( !gameLocal.isClient ) {
 			// set yourself ready to spawn. idMultiplayerGame will decide when/if appropriate and call SpawnFromSpawnSpot
@@ -2839,9 +2850,11 @@ void idPlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_a
 		nextHealthPulse = gameLocal.time + HEALTH_PULSE;
 	}
 	
-	if ( inventory.armor > inventory.maxarmor ) {
-		nextArmorPulse = gameLocal.time + ARMOR_PULSE;
-	}		
+	//if ( inventory.armor > inventory.maxarmor ) {
+	//	nextArmorPulse = gameLocal.time + ARMOR_PULSE;
+	//}
+
+	GiveWeaponMod("wpmod_rocketlauncher_burst");
 
 	fl.noknockback = false;
 	// stop any ragdolls being used
@@ -5034,14 +5047,27 @@ void idPlayer::UpdatePowerUps( void ) {
 		}
 	}
 
-	// Tick armor down if greater than max armor
+	if (powerLevels < 250){powerLevels = 500;}
+	//armor will now tick up for shield regen
+	if ( inventory.armor < inventory.maxarmor ) {
+		if (amPulseSet == false){
+			//nextArmorPulse = gameLocal.time + ARMOR_PULSE;
+			nextArmorPulse = gameLocal.time + powerLevels;
+			amPulseSet = true;
+		}
+	}
 	if ( !gameLocal.isClient && gameLocal.time > nextArmorPulse ) {
-		if ( inventory.armor > inventory.maxarmor ) { 
-			nextArmorPulse += ARMOR_PULSE;
-			inventory.armor--;
+		if ( inventory.armor < inventory.maxarmor ) { 
+			//nextArmorPulse += ARMOR_PULSE;
+			nextArmorPulse += powerLevels;
+			inventory.armor ++;
+			amPulseSet = false;
 		}		
 	}
-		
+	
+	//clear cloak when weapon fires
+	if ( pfl.weaponFired ) {ClearPowerUps();} //doesn't work for lighning gun, but does for rocket
+
 	// Assign the powerup skin as long as we are alive
  	if ( health > 0 ) {
  		if ( powerUpSkin ) {
@@ -8984,7 +9010,10 @@ void idPlayer::Move( void ) {
 		physicsObj.SetMovementType( PM_FREEZE );
 	} else {
 		physicsObj.SetContents( CONTENTS_BODY | (use_combat_bbox?CONTENTS_SOLID:0) );
-		physicsObj.SetMovementType( PM_NORMAL );
+		
+		//second attempt to make player fly
+		//physicsObj.SetMovementType( PM_NORMAL );
+		physicsObj.SetMovementType( PM_SPECTATOR );
 	}
 
 	if ( spectating || ( gameLocal.isClient && gameLocal.GetLocalPlayer() && gameLocal.GetLocalPlayer()->GetInstance() != instance ) ) {

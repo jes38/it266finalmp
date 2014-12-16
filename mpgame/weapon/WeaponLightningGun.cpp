@@ -810,6 +810,10 @@ rvWeaponLightningGun::State_Fire
 ================
 */
 stateResult_t rvWeaponLightningGun::State_Fire( const stateParms_t& parms ) {
+	
+	//reference player
+	idPlayer* player = gameLocal.GetLocalPlayer();
+
 	enum {
 		STAGE_INIT,
 		STAGE_ATTACKLOOP,
@@ -840,6 +844,10 @@ stateResult_t rvWeaponLightningGun::State_Fire( const stateParms_t& parms ) {
 			}
 			if ( AnimDone( ANIMCHANNEL_ALL, 0 ) ) {
 				PlayCycle( ANIMCHANNEL_ALL, "shoot_loop", 0 );
+
+				//clear cloak when player fires this weapon
+				player->ClearPowerUps();
+
 				if ( !gameLocal.isMultiplayer
 					&& owner == gameLocal.GetLocalPlayer() ) {
 					owner->playerView.SetShakeParms( MS2SEC(gameLocal.GetTime() + 500), 2.0f );

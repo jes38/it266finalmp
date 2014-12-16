@@ -59,7 +59,8 @@ idItem::idItem() {
 	itemShellHandle = -1;
 	shellMaterial = NULL;
 	orgOrigin.Zero();
-	canPickUp = true;
+	//canPickUp = true;
+	canPickUp = false;
 	fl.networkSync = true;
 	trigger = NULL;
 	syncPhysics = false;
@@ -968,7 +969,8 @@ void idItem::Event_Touch( idEntity *other, trace_t *trace ) {
 		return;
 	}
 
-	Pickup( static_cast<idPlayer *>(other) );
+	//second attempt to disable pickups
+	//Pickup( static_cast<idPlayer *>(other) );
 }
 
 /*
@@ -978,7 +980,9 @@ idItem::Event_Trigger
 */
 void idItem::Event_Trigger( idEntity *activator ) {
 	if ( !canPickUp && spawnArgs.GetBool( "triggerFirst" ) ) {
-		canPickUp = true;
+		//players can't pick up items
+		//canPickUp = true;
+		canPickUp = false;
 		return;
 	}
 

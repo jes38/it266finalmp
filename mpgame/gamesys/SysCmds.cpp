@@ -2930,6 +2930,31 @@ void Cmd_AddIcon_f( const idCmdArgs& args ) {
 }
 // RAVEN END
 
+
+//this new function will give the player a 10 second cloak
+float cloakDur = 10.0f;
+void Cmd_GiveCloak( const idCmdArgs& args ) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	player->GivePowerUp( POWERUP_INVISIBILITY, SEC2MS( cloakDur ) );
+}
+
+//crew management commands
+void Cmd_pts( const idCmdArgs& args ) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	player->powerLevels = 250;
+	cloakDur = 1.0f;
+}
+void Cmd_ptc( const idCmdArgs& args ) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	player->powerLevels = 1000;
+	cloakDur = 20.0f;
+}
+void Cmd_pbal( const idCmdArgs& args ) {
+	idPlayer* player = gameLocal.GetLocalPlayer();
+	player->powerLevels = 500;
+	cloakDur = 10.0f;
+}
+
 // RITUAL BEGIN
 // squirrel: Mode-agnostic buymenus
 void Cmd_ToggleBuyMenu_f( const idCmdArgs& args ) {
@@ -3248,6 +3273,13 @@ void idGameLocal::InitConsoleCommands( void ) {
 	cmdSystem->AddCommand( "buy",					Cmd_BuyItem_f,				CMD_FL_GAME,				"Buy an item (if in a buy zone and the game type supports it)" );
 // RITUAL END
 
+	//when "cloak" is typed, the givecloak function will activate
+	cmdSystem->AddCommand("cloak", Cmd_GiveCloak, CMD_FL_GAME, "Activates cloak");
+
+	//crew management commands
+	cmdSystem->AddCommand("pts", Cmd_pts, CMD_FL_GAME, "Divert power to shields. Effect: greater recharge rate, barely useable cloak");
+	cmdSystem->AddCommand("ptc", Cmd_ptc, CMD_FL_GAME, "Divert power to Cloak. Effect: longer cloak, less sheild recharge");
+	cmdSystem->AddCommand("pbal", Cmd_pbal, CMD_FL_GAME, "Rebalance power");
 }
 
 /*
